@@ -1,0 +1,33 @@
+{
+  "name": "sistema-penitenciario-backend",
+  "version": "1.0.0",
+  "description": "Backend para sistema de gestión penitenciaria",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest",
+    "migrate": "node src/database/migrate.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.9.2",
+    "express-rate-limit": "^6.8.1",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.6.1",
+    "supertest": "^6.3.3"
+  },
+  "keywords": ["sistema", "penitenciario", "backend", "nodejs"],
+  "author": "Tu Nombre",
+  "license": "MIT"
+}
