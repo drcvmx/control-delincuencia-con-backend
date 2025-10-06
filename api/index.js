@@ -20,6 +20,24 @@ module.exports = async (req, res) => {
     // Eliminar el parámetro path del query
     delete req.query.path;
     
+    // FIX: Agregar socket mock para que Express pueda obtener req.ip
+    // En serverless no hay socket real, así que creamos uno falso
+    if (!req.connection) {
+      req.connection = {};
+    }
+    if (!req.socket) {
+      req.socket = req.connection;
+    }
+    
+    // Obtener la IP real del header de Vercel
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const realIp = req.headers['x-real-ip'];
+    
+    req.connection.remoteAddress = 
+      (forwardedFor && forwardedFor.split(',')[0]) || 
+      realIp || 
+      '127.0.0.1';
+    
     // Si es POST, PUT o PATCH, leer el body
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
       try {
