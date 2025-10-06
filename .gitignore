@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/sistema-penitenciario-backend/node_modules
 
 # next.js
 /.next/
@@ -16,8 +17,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
+# env files (mantener .env.example)
+.env
+.env*.local
+.env.development
+.env.production
 
 # vercel
 .vercel
