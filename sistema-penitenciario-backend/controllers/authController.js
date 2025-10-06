@@ -76,7 +76,12 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const clientIP = req.ip || req.connection.remoteAddress;
+    // Obtener IP de forma segura (compatible con serverless)
+    const clientIP = req.ip || 
+                     req.headers['x-forwarded-for']?.split(',')[0] || 
+                     req.headers['x-real-ip'] || 
+                     req.connection?.remoteAddress || 
+                     '127.0.0.1';
     const userAgent = req.get('User-Agent');
 
     // Buscar usuario por username o email

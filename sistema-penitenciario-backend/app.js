@@ -185,12 +185,24 @@ app.use('*', (req, res) => {
 
 // Middleware de manejo de errores global
 app.use((error, req, res, next) => {
+  // Obtener IP de forma segura (compatible con serverless)
+  let clientIp = '127.0.0.1';
+  try {
+    clientIp = req.ip || 
+               req.headers['x-forwarded-for']?.split(',')[0] || 
+               req.headers['x-real-ip'] || 
+               req.connection?.remoteAddress || 
+               '127.0.0.1';
+  } catch (e) {
+    // Si falla obtener la IP, usar default
+  }
+  
   console.error('Error no manejado:', {
     error: error.message,
     stack: error.stack,
     url: req.originalUrl,
     method: req.method,
-    ip: req.ip,
+    ip: clientIp,
     timestamp: new Date().toISOString()
   });
 
