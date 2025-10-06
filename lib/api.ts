@@ -213,7 +213,7 @@ class ApiService {
   }
 
   async getStats(): Promise<ApiResponse> {
-    return this.request('/stats');
+    return this.request('/api/stats');
   }
 
   async getCarceles(): Promise<ApiResponse> {
