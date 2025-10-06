@@ -16,8 +16,8 @@ export interface StatsData {
 }
 
 export function useStats() {
-  const { data, error, isLoading, mutate } = useSWR<StatsData>(
-    'http://localhost:3001/api/stats',
+  const { data, error, isLoading, mutate} = useSWR<StatsData>(
+    '/api/stats',
     fetcher,
     {
       revalidateOnFocus: false, // Evitar revalidación al enfocar la ventana
