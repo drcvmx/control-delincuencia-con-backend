@@ -44,6 +44,11 @@ const corsOptions = {
     // Permitir requests sin origin (como mobile apps o Postman)
     if (!origin) return callback(null, true);
     
+    // En producción, permitir dominios de Vercel automáticamente
+    if (origin && origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -68,6 +73,25 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Configuración para serverless: obtener IP de headers en lugar de socket
+  keyGenerator: (req) => {
+    // Intentar obtener la IP de múltiples fuentes (compatible con serverless)
+    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+           req.headers['x-real-ip'] || 
+           req.connection?.remoteAddress || 
+           req.socket?.remoteAddress ||
+           req.ip ||
+           'unknown';
+  },
+  // Función para omitir el rate limiting en caso de error
+  skip: (req) => {
+    // Si no podemos obtener una IP válida, no aplicar rate limiting
+    // (mejor permitir la petición que bloquear todo)
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+               req.headers['x-real-ip'] || 
+               req.connection?.remoteAddress;
+    return !ip;
+  }
 });
 
 app.use(limiter);
