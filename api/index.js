@@ -1,10 +1,16 @@
 // api/index.js
 const app = require('../sistema-penitenciario-backend/app.js');
-const { Readable } = require('stream');
 
 // Handler para Vercel serverless
 module.exports = async (req, res) => {
   try {
+    console.log('🔵 API Handler - Inicio:', {
+      method: req.method,
+      url: req.url,
+      path: req.query.path,
+      headers: req.headers
+    });
+
     // Vercel agrega ?path= a la URL, necesitamos reconstruir la ruta correcta
     const path = req.query.path || '';
     
@@ -14,36 +20,43 @@ module.exports = async (req, res) => {
     // Eliminar el parámetro path del query
     delete req.query.path;
     
-    // Si es POST, PUT o PATCH, necesitamos recrear el stream del body
+    // Si es POST, PUT o PATCH, leer el body
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
-      // Leer el body como texto
-      let bodyText = '';
-      
-      // Intentar leer chunks si están disponibles
-      for await (const chunk of req) {
-        bodyText += chunk;
+      try {
+        let bodyText = '';
+        
+        // Leer el body
+        for await (const chunk of req) {
+          bodyText += chunk;
+        }
+        
+        console.log('🔵 Body recibido:', bodyText);
+        
+        // Parsear y agregar al req.body para que Express lo use
+        if (bodyText) {
+          req.body = JSON.parse(bodyText);
+        }
+      } catch (bodyError) {
+        console.error('❌ Error leyendo body:', bodyError);
+        return res.status(400).json({ 
+          error: 'Error parseando body',
+          details: bodyError.message 
+        });
       }
-      
-      // Si no hay body, intentar obtenerlo de otra forma
-      if (!bodyText && req.body) {
-        bodyText = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-      }
-      
-      // Crear un nuevo stream readable con el body
-      const bodyStream = new Readable();
-      bodyStream.push(bodyText);
-      bodyStream.push(null);
-      
-      // Reemplazar el request original con uno que tenga el stream nuevo
-      Object.assign(req, bodyStream);
-      req.headers['content-length'] = Buffer.byteLength(bodyText).toString();
     }
+    
+    console.log('🔵 Pasando a Express...');
     
     // Pasar la request a Express
     return app(req, res);
   } catch (error) {
-    console.error('Error en API handler:', error);
-    return res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('❌ Error en API handler:', error);
+    console.error('Stack:', error.stack);
+    return res.status(500).json({ 
+      error: 'Error interno del servidor',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
