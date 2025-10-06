@@ -104,10 +104,20 @@ app.use(limiter);
 app.use(compression());
 
 // Logging de requests
+// Configurar morgan con token personalizado para IP (compatible con serverless)
+morgan.token('real-ip', (req) => {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         'unknown';
+});
+
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+  // En desarrollo, usar formato simple con IP real
+  app.use(morgan(':method :url :status :response-time ms - :real-ip'));
 } else {
-  app.use(morgan('combined'));
+  // En producción, usar formato personalizado sin req.ip
+  app.use(morgan(':real-ip - :method :url :status :res[content-length] - :response-time ms'));
 }
 
 // Parseo de JSON y URL encoded
